@@ -40,4 +40,11 @@ interface AssignedAddressRepository : ReactiveCrudRepository<AssignedAddressMode
         @Param("now") now: LocalDateTime?,
         @Param("status") status: AddressStatus? = null
     ): Flow<AssignedAddressModel>?
+
+    @Query("select * from assigned_addresses where address = :address and (memo is null or memo = '' or memo = :memo) and assigned_date <= :at and (exp_time is null or exp_time > :at) order by assigned_date desc limit 1")
+    fun findHolderAt(
+        @Param("address") address: String,
+        @Param("memo") memo: String?,
+        @Param("at") at: LocalDateTime
+    ): Mono<AssignedAddressModel>
 }

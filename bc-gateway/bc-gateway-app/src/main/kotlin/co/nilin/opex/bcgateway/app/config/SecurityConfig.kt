@@ -52,6 +52,7 @@ class SecurityConfig(private val webClient: WebClient) {
             .pathMatchers("/omni-balance/bc/**").hasAuthority("ROLE_admin")
             .pathMatchers("/actuator/**").permitAll()
             .pathMatchers("/scanner/**").permitAll()
+            .pathMatchers(HttpMethod.GET,"/v1/address/*/holder").permitAll()
             .anyExchange().authenticated()
             .and()
             .oauth2ResourceServer()

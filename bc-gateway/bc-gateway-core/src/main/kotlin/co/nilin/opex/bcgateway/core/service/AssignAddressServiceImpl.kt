@@ -1,14 +1,20 @@
 package co.nilin.opex.bcgateway.core.service
 
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
-import co.nilin.opex.bcgateway.core.model.*
-import co.nilin.opex.bcgateway.core.spi.*
+import co.nilin.opex.bcgateway.core.model.AddressStatus
+import co.nilin.opex.bcgateway.core.model.AssignedAddress
+import co.nilin.opex.bcgateway.core.spi.AssignedAddressHandler
+import co.nilin.opex.bcgateway.core.spi.ChainLoader
+import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
+import co.nilin.opex.bcgateway.core.spi.ReservedAddressHandler
 import co.nilin.opex.bcgateway.core.utils.LoggerDelegate
 import co.nilin.opex.common.OpexError
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 open class AssignAddressServiceImpl(
     private val currencyHandler: CryptoCurrencyHandlerV2,
@@ -30,7 +36,7 @@ open class AssignAddressServiceImpl(
             ?: throw OpexError.CurrencyNotFound.exception()
 
         val requestedChain = chainLoader.fetchChainInfo(requestedGateway.chain)
-        val addressTypes = requestedChain?.addressTypes?: throw OpexError.BadRequest.exception()
+        val addressTypes = requestedChain?.addressTypes ?: throw OpexError.BadRequest.exception()
 
         val userAssignedAddresses =
             (assignedAddressHandler.fetchAssignedAddresses(user, addressTypes!!)).toMutableList()
@@ -71,6 +77,14 @@ open class AssignAddressServiceImpl(
             address.apply { id = null }
         }
         return result.toMutableList()
+    }
+
+    override suspend fun findHolder(address: String, memo: String?, time: Long?): Pair<String?, AddressStatus?> {
+        val at: LocalDateTime? = time?.let { ts ->
+            val instant = Instant.ofEpochMilli(ts)
+            LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        }
+        return assignedAddressHandler.findHolder(address, memo, at)
     }
 
 }
