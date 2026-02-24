@@ -26,7 +26,7 @@ class TranslationCacheService(
     @PostConstruct
     fun start() {
         job = scope.launch {
-            logger.info("Going to get messages which are updated after {}", lastUpdate)
+            logger.info("Going to get messages which are updated after: {}", lastUpdate)
             while (isActive) {
                 try {
                     if (configClient != null) {
