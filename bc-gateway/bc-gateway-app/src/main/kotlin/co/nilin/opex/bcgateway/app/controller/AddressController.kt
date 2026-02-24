@@ -1,6 +1,7 @@
 package co.nilin.opex.bcgateway.app.controller
 
 import co.nilin.opex.bcgateway.core.api.AssignAddressService
+import co.nilin.opex.bcgateway.core.model.AddressStatus
 import co.nilin.opex.bcgateway.core.model.AssignedAddress
 import co.nilin.opex.bcgateway.core.model.ReservedAddress
 import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
@@ -21,10 +22,14 @@ import java.nio.charset.StandardCharsets
 class AddressController(
     private val assignAddressService: AssignAddressService,
     private val reservedAddressHandler: ReservedAddressHandler,
-    private val addressTypeHandler: AddressTypeHandler
+    private val addressTypeHandler: AddressTypeHandler,
 ) {
     data class AssignAddressRequest(val uuid: String, val currency: String, val gatewayUuid: String)
     data class AssignAddressResponse(val addresses: List<AssignedAddress>)
+    data class AddressHolderResponse(
+        val uuid: String?,
+        val currentStatus: AddressStatus?
+    )
 
     @PostMapping("/assign")
     suspend fun assignAddress(
@@ -49,6 +54,19 @@ class AddressController(
 //        }.collect(Collectors.toList()))
     }
 
+    @GetMapping("/{address}/holder")
+    suspend fun getAddressHolder(
+        @PathVariable address: String,
+        @RequestParam(required = false) memo: String?,
+        @RequestParam(required = false) time: Long?
+    ): AddressHolderResponse {
+        val (holderUuid, currentStatus) = assignAddressService.findHolder(address, memo, time)
+        return AddressHolderResponse(
+            uuid = holderUuid,
+            currentStatus = currentStatus
+        )
+    }
+
     /**
      * (address, regex, address_type)
      */
@@ -67,4 +85,6 @@ class AddressController(
         // Do nothing in case of duplication (Or any constraint issue)
         runCatching { reservedAddressHandler.addReservedAddress(items) }
     }
+
+
 }

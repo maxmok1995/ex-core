@@ -106,6 +106,18 @@ class AssignedAddressHandlerImpl(
         }?.toList()
     }
 
+    override suspend fun findHolder(address: String, memo: String?, at: LocalDateTime?): Pair<String?, AddressStatus?> {
+
+        if (at == null) {
+            val current = assignedAddressRepository
+                .findByAddressAndMemoAndStatus(address, memo, AddressStatus.Assigned)
+                .awaitFirstOrNull()
+            return Pair(current?.uuid, current?.status)
+        }
+        val atModel = assignedAddressRepository.findHolderAt(address, memo, at).awaitFirstOrNull()
+        return Pair(atModel?.uuid, atModel?.status)
+    }
+
     private suspend fun AssignedAddressModel.toDto(addressTypeMap: MutableMap<Long, AddressType>): AssignedAddress {
         return AssignedAddress(
             this.uuid,
