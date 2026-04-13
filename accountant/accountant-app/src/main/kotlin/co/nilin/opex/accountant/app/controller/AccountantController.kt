@@ -25,16 +25,14 @@ class AccountantController(
         @PathVariable("currency") currency: String,
         @PathVariable("amount") amount: BigDecimal
     ): BooleanResponse {
-        val canFulfil = runCatching { walletProxy.canFulfil(currency, WalletType.MAIN, uuid, amount) }
+        val committedSum = runCatching {
+            financialActionLoader.sumUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!)
+        }.onFailure { logger.error(it.message) }.getOrElse { BigDecimal.ZERO }
+
+        val totalNeeded = amount.add(committedSum)
+        val canFulfil = runCatching { walletProxy.canFulfil(currency, WalletType.MAIN, uuid, totalNeeded) }
             .onFailure { logger.error(it.message) }
             .getOrElse { false }
-        return if (canFulfil) {
-            val unprocessed =
-                financialActionLoader.countUnprocessed(uuid, currency, SubmitOrderEvent::class.simpleName!!)
-            BooleanResponse(unprocessed <= 0)
-        } else
-            BooleanResponse(false)
+        return BooleanResponse(canFulfil)
     }
-
-
 }

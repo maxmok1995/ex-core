@@ -55,6 +55,15 @@ class FinancialActionLoaderImpl(
         ).awaitFirstOrElse { BigDecimal.ZERO }.toLong()
     }
 
+    override suspend fun sumUnprocessed(userUuid: String, symbol: String, eventType: String): java.math.BigDecimal {
+        return financialActionRepository.sumByUuidAndSymbolAndEventTypeAndStatusNot(
+            userUuid,
+            symbol,
+            eventType,
+            FinancialActionStatus.PROCESSED
+        ).awaitFirstOrElse { BigDecimal.ZERO }
+    }
+
     override suspend fun loadFinancialAction(id: Long?): FinancialAction? {
         if (id != null) {
             val fim = financialActionRepository.findById(id).awaitFirst()

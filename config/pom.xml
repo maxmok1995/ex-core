@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>core</artifactId>
+        <groupId>co.nilin.opex</groupId>
+        <version>1.0.1-beta.7</version>
+    </parent>
+    <groupId>co.nilin.opex.config</groupId>
+    <artifactId>config</artifactId>
+    <name>config</name>
+    <packaging>pom</packaging>
+    <description>Config service for Opex</description>
+    <modules>
+        <module>config-app</module>
+    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>co.nilin.opex</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

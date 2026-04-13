@@ -29,6 +29,14 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
         @Param("status") financialActionStatus: FinancialActionStatus
     ): Mono<BigDecimal>
 
+    @Query("select coalesce(sum(fi.amount), 0) from fi_actions fi where fi.sender = :uuid and fi.symbol = :symbol and fi.event_type = :eventType and fi.status != :status")
+    fun sumByUuidAndSymbolAndEventTypeAndStatusNot(
+        @Param("uuid") uuid: String,
+        @Param("symbol") symbol: String,
+        @Param("eventType") eventType: String,
+        @Param("status") financialActionStatus: FinancialActionStatus
+    ): Mono<BigDecimal>
+
     @Query("select * from fi_actions fi where status != :status")
     fun findByStatusNot(@Param("status") status: String, paging: Pageable): Flow<FinancialActionModel>
 

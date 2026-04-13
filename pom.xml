@@ -33,6 +33,8 @@
         <module>wallet</module>
         <module>bc-gateway</module>
         <module>common</module>
+        <module>captcha</module>
+        <module>config</module>
     </modules>
 
     <dependencies>

@@ -90,6 +90,7 @@ keycloak:
   hashicorp:
     url: ${VAULT_URL}
 app:
+  auth-base-url: ${FRONTEND_URL:http://localhost:8080/auth}
   verify-redirect-url: ${VERIFY_REDIRECT_URL}
   forgot-redirect-url: ${FORGOT_REDIRECT_URL}
   whitelist:

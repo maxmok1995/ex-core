@@ -52,6 +52,10 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
     private val forgotUrl by lazy {
         ApplicationContextHolder.getCurrentContext()!!.environment.resolvePlaceholders("\${forgot-redirect-url}")
     }
+    private val authBaseUrl by lazy {
+        ApplicationContextHolder.getCurrentContext()!!
+            .environment.resolvePlaceholders("\${FRONTEND_URL:http://localhost:8080/auth}")
+    }
     private val registerWhitelistIsEnable by lazy {
         ApplicationContextHolder.getCurrentContext()!!
             .environment
@@ -119,7 +123,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
             addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL)
             val actions = requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, this, actions)
-            val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
+            val url = "$authBaseUrl/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
             val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
             logger.info(link)
@@ -230,7 +234,7 @@ class UserManagementResource(private val session: KeycloakSession) : RealmResour
         if (user != null) {
             val actions = user.requiredActionsStream.collect(Collectors.toList())
             val token = ActionTokenHelper.generateRequiredActionsToken(session, opexRealm, user, actions)
-            val url = "${session.context.getUri(UrlType.BACKEND).baseUri}/realms/opex/user-management/user/verify"
+            val url = "$authBaseUrl/realms/opex/user-management/user/verify"
             val link = ActionTokenHelper.attachTokenToLink(url, token)
             val expiration = TimeUnit.SECONDS.toMinutes(opexRealm.actionTokenGeneratedByAdminLifespan.toLong())
             logger.info(link)

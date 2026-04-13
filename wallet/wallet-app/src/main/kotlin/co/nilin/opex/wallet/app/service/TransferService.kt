@@ -311,7 +311,7 @@ class TransferService(
         val tx = _transfer(
             symbol,
             WalletType.MAIN,
-            senderUuid,
+            systemUuid,
             WalletType.MAIN,
             receiverUuid,
             amount,

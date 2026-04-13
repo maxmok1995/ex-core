@@ -43,7 +43,7 @@ init_secrets() {
   ## Enable backend policies
   vault policy write backend-policy /vault/config/backend-policy.hcl
 
-  ## Enable backend apps
+  ## Enable backend apps (原有服務)
   vault write auth/app-id/map/app-id/opex-accountant value=backend-policy display_name=opex-accountant
   vault write auth/app-id/map/app-id/opex-api value=backend-policy display_name=opex-api
   vault write auth/app-id/map/app-id/opex-market value=backend-policy display_name=opex-market
@@ -62,11 +62,13 @@ init_secrets() {
   vault write auth/app-id/map/app-id/opex-referral value=backend-policy display_name=opex-referral
   vault write auth/app-id/map/app-id/opex-profile value=backend-policy display_name=opex-profile
   vault write auth/app-id/map/app-id/opex-kyc value=backend-policy display_name=opex-kyc
+  ## 自建服務
+  vault write auth/app-id/map/app-id/opex-config value=backend-policy display_name=opex-config
+  vault write auth/app-id/map/app-id/opex-captcha value=backend-policy display_name=opex-captcha
 
-
-  ## Enable user-id
+  ## Enable user-id（包含自建服務）
   vault write auth/app-id/map/user-id/${BACKEND_USER} \
-  value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-market,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,scanner-liaison,opex-referral,opex-profile,opex-kyc
+  value=opex-wallet,opex-websocket,opex-eventlog,opex-auth,opex-accountant,opex-api,opex-market,opex-bc-gateway,opex-payment,opex-admin,bitcoin-scanner,ethereum-scanner,tron-scanner,scanner-scheduler,scanner-liaison,opex-referral,opex-profile,opex-kyc,opex-config,opex-captcha
 
   ## Check login app-id
   vault write auth/app-id/login/opex-accountant user_id=${BACKEND_USER}
@@ -87,28 +89,40 @@ init_secrets() {
   vault write auth/app-id/login/opex-referral user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-profile user_id=${BACKEND_USER}
   vault write auth/app-id/login/opex-kyc user_id=${BACKEND_USER}
+  vault write auth/app-id/login/opex-config user_id=${BACKEND_USER}
+  vault write auth/app-id/login/opex-captcha user_id=${BACKEND_USER}
 
-  ## Add secret values
+  ## Add secret values（原有服務）
   vault kv put secret/opex smtppass=${SMTP_PASS}
   vault kv put secret/opex-accountant dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-api dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-market dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
-  vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS} client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/opex-bc-gateway dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
   vault kv put secret/opex-eventlog dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-auth dbusername=${DB_USER} dbpassword=${DB_PASS} admin_username=${KEYCLOAK_ADMIN_USERNAME} admin_password=${KEYCLOAK_ADMIN_PASSWORD}
-  vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}  client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/opex-wallet dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
   vault kv put secret/opex-websocket dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-payment dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS} vandar_api_key=${VANDAR_API_KEY}
   vault kv put secret/opex-admin keycloak_client_secret=${OPEX_ADMIN_KEYCLOAK_CLIENT_SECRET}
-  vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}  client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
-  vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}   client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
-  vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS}   client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
-  vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS}  client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
-  vault kv put secret/scanner-liaison dbusername=${DB_USER} dbpassword=${DB_PASS}   client_id=${CLIENT_ID}  client_secret=${CLIENT_SECRET}
+  vault kv put secret/bitcoin-scanner dbusername=${DB_USER} dbpassword=${DB_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
+  vault kv put secret/ethereum-scanner dbusername=${DB_USER} dbpassword=${DB_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
+  vault kv put secret/tron-scanner dbusername=${DB_USER} dbpassword=${DB_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
+  vault kv put secret/scanner-scheduler dbusername=${DB_USER} dbpassword=${DB_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
+  vault kv put secret/scanner-liaison dbusername=${DB_USER} dbpassword=${DB_PASS} client_id=${CLIENT_ID} client_secret=${CLIENT_SECRET}
   vault kv put secret/opex-referral dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-profile dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
   vault kv put secret/opex-kyc dbusername=${DB_USER} dbpassword=${DB_PASS} db_read_only_username=${DB_READ_ONLY_USER} db_read_only_pass=${DB_READ_ONLY_PASS}
-
+  ## 自建服務 secrets
+  vault kv put secret/opex-config \
+    default_theme="${SITE_DEFAULT_THEME:-DARK}" \
+    default_language="${SITE_DEFAULT_LANGUAGE:-en}" \
+    logo_url="${SITE_LOGO_URL:-}" \
+    title="${SITE_TITLE:-Exchange}" \
+    description="${SITE_DESCRIPTION:-}" \
+    support_email="${SITE_SUPPORT_EMAIL:-}" \
+    base_currency="${SITE_BASE_CURRENCY:-USDT}" \
+    date_type="${SITE_DATE_TYPE:-Gregorian}"
+  ## captcha 為無狀態服務，不需要存 secrets
 }
 
 run() {

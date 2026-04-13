@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: opex-config
+  main:
+    allow-circular-references: true
+  redis:
+    host: ${REDIS_HOST:redis-cache}
+    port: 6379
+  cloud:
+    vault:
+      host: ${VAULT_HOST}
+      port: 8200
+      scheme: http
+      authentication: APPID
+      app-id:
+        user-id: co.nilin.opex.config.app.utils.VaultUserIdMechanism
+      fail-fast: true
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: '/'
+        application-name: ${spring.application.name}
+  config:
+    import: vault://secret/${spring.application.name}
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: ["health", "prometheus", "metrics"]
+  endpoint:
+    health:
+      show-details: always

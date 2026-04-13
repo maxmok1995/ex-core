@@ -1,0 +1,177 @@
+services:
+
+  postgres-ethereum-scanner:
+    image: ghcr.io/opexdev/postgres-opex
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=mk1995.DB
+      - POSTGRES_DB=opex
+      - POSTGRES_READ_ONLY_USER=opex_reader
+      - POSTGRES_READ_ONLY_PASSWORD=mk1995.DB
+    volumes:
+      - ethereum-scanner-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-bsc-scanner:
+    image: ghcr.io/opexdev/postgres-opex
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=hiopex
+      - POSTGRES_DB=opex_scanner
+      - POSTGRES_READ_ONLY_USER=opex_reader
+      - POSTGRES_READ_ONLY_PASSWORD=mk1995.DB
+    volumes:
+      - bsc-scanner-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-bitcoin-scanner:
+    image: ghcr.io/opexdev/postgres-opex
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=mk1995.DB
+      - POSTGRES_DB=opex
+      - POSTGRES_READ_ONLY_USER=opex_reader
+      - POSTGRES_READ_ONLY_PASSWORD=mk1995.DB
+    volumes:
+      - bitcoin-scanner-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-scanner-liaison:
+    image: ghcr.io/opexdev/postgres-opex
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=mk1995.DB
+      - POSTGRES_DB=opex
+      - POSTGRES_READ_ONLY_USER=opex_reader
+      - POSTGRES_READ_ONLY_PASSWORD=mk1995.DB
+    volumes:
+      - scanner-liaison-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-scanner-scheduler:
+    image: ghcr.io/opexdev/postgres-opex
+    environment:
+      - POSTGRES_USER=opex
+      - POSTGRES_PASSWORD=mk1995.DB
+      - POSTGRES_DB=opex
+      - POSTGRES_READ_ONLY_USER=opex_reader
+      - POSTGRES_READ_ONLY_PASSWORD=mk1995.DB
+    volumes:
+      - scanner-scheduler-data:/var/lib/postgresql/data/
+    networks:
+      - opex
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  scanner-liaison:
+    image: ghcr.io/opexdev/scanner-liaison
+    restart: on-failure
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
+      - DB_IP_PORT=postgres-scanner-liaison
+    depends_on:
+      - postgres-scanner-liaison
+      - vault
+    networks:
+      - opex
+
+  scanner-scheduler:
+    image: ghcr.io/opexdev/scanner-scheduler
+    restart: on-failure
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
+      - DB_IP_PORT=postgres-scanner-scheduler
+    depends_on:
+      - postgres-scanner-scheduler
+      - vault
+    networks:
+      - opex
+
+  ethereum-scanner:
+    image: ghcr.io/opexdev/ethereum-scanner
+    restart: on-failure
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
+      - DB_IP_PORT=postgres-ethereum-scanner
+      - CHAIN_NAME=ethereum
+      - RPC_ENDPOINT=
+    depends_on:
+      - postgres-ethereum-scanner
+      - vault
+      - scanner-liaison
+    networks:
+      - opex
+
+  bsc-scanner:
+    image: ghcr.io/opexdev/bsc-scanner
+    restart: on-failure
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
+      - DB_IP_PORT=postgres-bsc-scanner
+      - CHAIN_NAME=bsc
+      - RPC_ENDPOINT=
+    depends_on:
+      - postgres-bsc-scanner
+      - vault
+      - scanner-liaison
+    networks:
+      - opex
+
+  bitcoin-scanner:
+    image: ghcr.io/opexdev/bitcoin-scanner
+    restart: on-failure
+    environment:
+      - JAVA_OPTS=-Xmx256m
+      - VAULT_HOST=vault
+      - BACKEND_USER=${BACKEND_USER}
+      - DB_IP_PORT=postgres-bitcoin-scanner
+      - CHAIN_NAME=bitcoin
+      - REST_ENDPOINT=
+      - API_KEY=
+    depends_on:
+      - postgres-bitcoin-scanner
+      - vault
+      - scanner-liaison
+    networks:
+      - opex
+
+volumes:
+  ethereum-scanner-data:
+  bsc-scanner-data:
+  bitcoin-scanner-data:
+  scanner-liaison-data:
+  scanner-scheduler-data:
+
+networks:
+  opex:
+    external: true

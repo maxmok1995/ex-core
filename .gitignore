@@ -44,3 +44,7 @@ build/
 !/.mvn/
 
 .DS_Store
+*.bak
+*.bak2
+preferences.yml
+vault_fixed.json
